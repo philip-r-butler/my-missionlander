@@ -1,5 +1,6 @@
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
@@ -18,6 +19,9 @@ const definePlugin = new webpack.DefinePlugin({
   APP_VERSION,
   APP_SOURCE,
 });
+const copyAssetsPlugin = new CopyWebpackPlugin([
+  { from: './src/assets', to: 'assets' }
+])
 
 module.exports = {
   entry: ['@babel/polyfill', './src/index.js'],
@@ -61,5 +65,5 @@ module.exports = {
       },
     ],
   },
-  plugins: [htmlPlugin, cssPlugin, cleanPlugin, definePlugin],
+  plugins: [htmlPlugin, cssPlugin, cleanPlugin, definePlugin, copyAssetsPlugin],
 };
