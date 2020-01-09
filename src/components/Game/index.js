@@ -1,5 +1,6 @@
 import Background from '../Background';
 import Lander from '../Lander';
+import Landscape from '../Landscape';
 
 export default class Game {
   constructor(canvasId) {
@@ -27,7 +28,7 @@ export default class Game {
   createGameObjects() {
     this.background = new Background('black', 0, 0);
     this.lander = new Lander(50, 150);
-    //     this.landscape = new GameObject(x, y, shape);
+    this.landscape = new Landscape();
     //     this.platform = new GameObject(x, y, shape);
     //     this.stars = new Stars(x, y)
   }
@@ -41,10 +42,14 @@ export default class Game {
     this.background.setSize(width, height);
   }
 
+  update(){
+    this.lander.move(this.context);
+  }
+
   draw() {
     this.background.draw(this.context);
-    this.lander.move();
     this.lander.draw(this.context);
+    this.landscape.draw(this.context);
 
     // this.rocket.draw();
     // this.landscape.draw();
@@ -64,6 +69,7 @@ export default class Game {
     }
     if (this.startTime >= 0) {
       progress = timestamp - this.startTime;
+      this.update();
       this.draw();
     }
 
