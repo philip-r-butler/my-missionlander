@@ -1,23 +1,33 @@
-import drawElements from '../Draw';
+import GameObject from '../GameObject';
 
-class Background {
+class Background extends GameObject {
   constructor(color, width, height) {
+    super(0, 0);
     this.color = color;
-    this.setSize(width, height);
+    this.width = width;
+    this.height = height;
   }
 
-  setSize(width, height){
+  setSize(width, height) {
     this.width = width;
     this.height = height;
   }
 
   draw(context) {
-    const shape = [
-      { cmd: 'fillStyle', style: this.color },
-      { cmd: 'fillRect', x: 0, y: 0, width: this.width, height: this.height },
-    ];
-    drawElements(context).execute(shape);
+    super.shape = Background.shape(
+      this.x,
+      this.y,
+      this.width,
+      this.height,
+      this.color
+    );
+    super.draw(context);
   }
 }
+
+Background.shape = (x, y, width, height, color) => [
+  { cmd: 'fillStyle', style: color },
+  { cmd: 'fillRect', x, y, width, height },
+];
 
 export default Background;

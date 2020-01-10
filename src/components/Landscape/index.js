@@ -1,15 +1,8 @@
-import drawElements from '../Draw';
+import GameObject from '../GameObject';
 
-export default class Landscape {
+export default class Landscape extends GameObject {
   constructor(x, y) {
-    this.x = x;
-    this.y = y;
-
-    this.shape = Landscape.shape;
-  }
-
-  draw(context) {
-    drawElements(context).execute(this.shape);
+    super(x, y, Landscape.shape);
   }
 }
 

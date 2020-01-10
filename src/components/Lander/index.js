@@ -1,23 +1,19 @@
-import drawElements from '../Draw';
+import GameObject from '../GameObject';
 
-export default class Lander {
+class Lander extends GameObject {
   constructor(x, y) {
-    this.x = x;
-    this.y = y;
+    super(x, y, Lander.shape(x, y));
     this.incrementX = 1;
     this.incrementY = 0.02;
-    this.shape = Lander.shape;
   }
 
   move() {
     this.incrementY = this.incrementY * 1.009;
     this.x += this.incrementX;
     this.y += this.incrementY;
+    super.shape = Lander.shape(this.x, this.y);
   }
 
-  draw(context) {
-    drawElements(context).execute(this.shape(this.x, this.y));
-  }
 }
 
 Lander.shape = (x, y) => {
@@ -35,3 +31,5 @@ Lander.shape = (x, y) => {
     { cmd: 'stroke' },
   ];
 };
+
+export default Lander;
