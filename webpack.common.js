@@ -24,7 +24,7 @@ const copyAssetsPlugin = new CopyWebpackPlugin([
 ]);
 
 module.exports = {
-  entry: ['@babel/polyfill', './src/index.js'],
+  entry: ['./src/index.js'],
   devServer: {
     historyApiFallback: true,
     stats: 'minimal',
