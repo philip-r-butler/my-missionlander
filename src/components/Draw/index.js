@@ -15,6 +15,7 @@ const command = context => ({
   rect: ({ x, y, width, height }) => context.rect(x, y, width, height),
   fillStyle: ({ style }) => (context.fillStyle = style),
   fillRect: ({ x, y, width, height }) => context.fillRect(x, y, width, height),
+  fill: () => context.fill(),
 });
 
 export default drawElements;
