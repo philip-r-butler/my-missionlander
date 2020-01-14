@@ -1,23 +1,34 @@
 import Background from '../Background';
 import Lander from '../Lander';
 import Landscape from '../Landscape';
+import Stars from '../Stars';
 
 export default class Game {
-  constructor(canvasId) {
-    this.canvas = document.getElementById(canvasId);
+  constructor(global, canvasId) {
+    this.window = global;
+    this.canvas = this.window.document.getElementById(canvasId);
     this.context = this.canvas.getContext('2d');
 
-    this.startTime = -1;
-    this.animationLength = 10000;
+    this.isUpPressed = false;
+    this.isLeftPressed = false;
+    this.isRightPressed = false;
 
-    this.resize = this.resize.bind(this);
     this.setSize = this.setSize.bind(this);
     this.animate = this.animate.bind(this);
+    this.onResize = this.onResize.bind(this);
+    this.onKeyDown = this.onKeyDown.bind(this);
+    this.onKeyUp = this.onKeyUp.bind(this);
+
+    this.window.addEventListener('resize', this.onResize, false);
+    this.window.addEventListener('keydown', this.onKeyDown, false);
+    this.window.addEventListener('keyup', this.onKeyUp, false);
 
     this.create();
     this.draw();
+  }
 
-    window.requestAnimationFrame(this.animate);
+  start() {
+    this.window.requestAnimationFrame(this.animate);
   }
 
   create() {
@@ -27,10 +38,10 @@ export default class Game {
 
   createGameObjects() {
     this.background = new Background('black', 0, 0);
-    this.lander = new Lander(50, 150);
     this.landscape = new Landscape();
+    this.stars = new Stars(20);
+    this.lander = new Lander(110, 150);
     //     this.platform = new GameObject(x, y, shape);
-    //     this.stars = new Stars(x, y)
   }
 
   setSize() {
@@ -42,39 +53,50 @@ export default class Game {
     this.background.setSize(width, height);
   }
 
-  update(){
-    this.lander.move(this.context);
+  onKeyDown(e) {
+    const keyCommands = {
+      ArrowUp: () => (this.isUpPressed = true),
+      ArrowLeft: () => {
+        this.isRightPressed = false;
+        this.isLeftPressed = true;
+      },
+      ArrowRight: () => {
+        this.isLeftPressed = false;
+        this.isRightPressed = true;
+      },
+    };
+    if (e.key in keyCommands) keyCommands[e.key]();
+  }
+
+  onKeyUp(e) {
+    const keyCommands = {
+      ArrowUp: () => (this.isUpPressed = false),
+      ArrowLeft: () => (this.isLeftPressed = false),
+      ArrowRight: () => (this.isRightPressed = false),
+    };
+    if (e.key in keyCommands) keyCommands[e.key]();
+  }
+
+  update() {
+    this.lander.move(this.isUpPressed, this.isRightPressed, this.isLeftPressed);
   }
 
   draw() {
     this.background.draw(this.context);
+    this.stars.draw(this.context);
     this.lander.draw(this.context);
     this.landscape.draw(this.context);
-
-    // this.rocket.draw();
-    // this.landscape.draw();
-    // this.stars.draw();
   }
 
-  resize() {
+  onResize() {
     this.setSize();
     this.draw();
   }
 
-  animate(timestamp) {
-    let progress = 0;
+  animate() {
+    this.update();
+    this.draw();
 
-    if (this.startTime < 0) {
-      this.startTime = timestamp;
-    }
-    if (this.startTime >= 0) {
-      progress = timestamp - this.startTime;
-      this.update();
-      this.draw();
-    }
-
-    if (progress < this.animationLength) {
-      window.requestAnimationFrame(this.animate.bind(this));
-    }
+    window.requestAnimationFrame(this.animate.bind(this));
   }
 }
