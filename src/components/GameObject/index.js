@@ -8,7 +8,11 @@ class GameObject {
   }
 
   draw(context) {
-    drawElements(context).execute(this.shape);
+    this.drawShape(context, this.shape);
+  }
+
+  drawShape(context, shape) {
+    drawElements(context).execute(shape);
   }
 }
 
