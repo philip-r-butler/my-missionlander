@@ -2,13 +2,8 @@ import GameObject from '../GameObject';
 
 class Background extends GameObject {
   constructor(color, width, height) {
-    super(0, 0);
+    super(0, 0, Background.shape());
     this.color = color;
-    this.width = width;
-    this.height = height;
-  }
-
-  setSize(width, height) {
     this.width = width;
     this.height = height;
   }
@@ -25,7 +20,7 @@ class Background extends GameObject {
   }
 }
 
-Background.shape = (x, y, width, height, color) => [
+Background.shape = (x = 0, y = 0, width = 0, height = 0, color = '') => [
   { cmd: 'fillStyle', style: color },
   { cmd: 'fillRect', x, y, width, height },
 ];
