@@ -35,7 +35,7 @@ Game.prototype.createKeyCommands = function() {
   this.isRightPressed = false;
 
   this.onKeyDownCommnands = {
-    ArrowUp: () => (this.isUpPressed = true),
+    ArrowUp: () => this.isUpPressed = true,
     ArrowLeft: () => {
       this.isRightPressed = false;
       this.isLeftPressed = true;
@@ -47,9 +47,9 @@ Game.prototype.createKeyCommands = function() {
   };
 
   this.onKeyUpCommands = {
-    ArrowUp: () => (this.isUpPressed = false),
-    ArrowLeft: () => (this.isLeftPressed = false),
-    ArrowRight: () => (this.isRightPressed = false),
+    ArrowUp: () => this.isUpPressed = false,
+    ArrowLeft: () => this.isLeftPressed = false,
+    ArrowRight: () => this.isRightPressed = false,
   };
 };
 
