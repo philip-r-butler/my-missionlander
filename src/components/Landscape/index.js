@@ -1,38 +1,43 @@
 import * as Noise from 'perlin-noise-3d';
 import GameObject from '../GameObject';
 
-class Landscape extends GameObject {
-  constructor(color, width, height) {
-    super();
-    this.width = width;
-    this.height = height;
+const Landscape = function(color, width, height) {
+  GameObject.call(this, 0, 0, []);
+  this.width = width;
+  this.height = height;
 
-    this.makeShape();
-  }
+  this.makeShape();
+};
 
-  makeShape() {
-    this.makePeaks();
-    super.shape = Landscape.shape(this.width, this.height, this.peaks);
-  }
+Landscape.prototype = Object.create(GameObject.prototype);
 
-  makePeaks() {
-    const noise = new Noise();
-    noise.noiseSeed(Landscape.seed);
+Landscape.prototype.constructor = Landscape;
 
-    const points = Array.from({ length: this.width }, (_, increment) =>
-      noise.get(increment * Landscape.smoothness)
-    );
-    const minPoint = Math.min(...points);
-    const range = Math.max(...points) - minPoint;
+Landscape.prototype.makeShape = function() {
+  this.makePeaks();
+  this.shape = Landscape.shape(this.width, this.height, this.peaks);
+};
 
-    this.peaks = points.map(point => this.height * (1 + Landscape.scale * (point - minPoint - range) / range));
-  }
+Landscape.prototype.makePeaks = function() {
+  const noise = new Noise();
+  noise.noiseSeed(Landscape.seed);
 
-  setSize(width, height) {
-    super.setSize(width, height);
-    this.makeShape();
-  }
-}
+  const points = Array.from({ length: this.width }, (_, increment) =>
+    noise.get(increment * Landscape.smoothness)
+  );
+  const minPoint = Math.min(...points);
+  const range = Math.max(...points) - minPoint;
+
+  this.peaks = points.map(
+    p => this.height * (1 + (Landscape.scale * (p - minPoint - range)) / range)
+  );
+};
+
+Landscape.prototype.setSize = function(width, height) {
+  this.width = width;
+  this.height = height;
+  this.makeShape();
+};
 
 Landscape.seed = Math.random() * 100;
 Landscape.scale = 0.6;
