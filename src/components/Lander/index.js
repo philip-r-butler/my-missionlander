@@ -4,7 +4,7 @@ class Lander extends GameObject {
   constructor(x, y) {
     super(x, y, Lander.shape());
 
-    this.deltaX = 0.415;
+    this.deltaX = 0.5;
     this.deltaY = 0;
     this.rotation = 0;
     this.thrustPower = 0;
@@ -25,15 +25,6 @@ class Lander extends GameObject {
     super.shape = Lander.shape();
   }
 
-  thrustOn() {
-    this.thrustPower += (1 - this.thrustPower) * 0.2;
-    this.deltaY -= this.thrustPower * Lander.thrustAcceleration;
-  }
-
-  thrustOff() {
-    this.thrustPower = 0;
-  }
-
   rotate(clockwise) {
     const maxRotation = 2 * Math.PI;
     if (clockwise) this.rotation += Lander.rotationAcceleration;
@@ -51,9 +42,20 @@ class Lander extends GameObject {
         : this.deltaY + Lander.gravity;
   }
 
+  thrustOn() {
+    this.thrustPower += (1 - this.thrustPower) * 0.2;
+    const acceleration = this.thrustPower * Lander.thrustAcceleration;
+    this.deltaX += acceleration * Math.sin(this.rotation);
+    this.deltaY -= acceleration * Math.cos(this.rotation);
+  }
+
+  thrustOff() {
+    this.thrustPower = 0;
+  }
+
   draw(context) {
     const cx = this.x + Lander.width;
-    const cy = this.y + Lander.height;
+    const cy = this.y + Lander.height / 2;
 
     context.save();
     context.translate(cx, cy);
