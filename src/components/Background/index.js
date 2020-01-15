@@ -2,13 +2,17 @@ import GameObject from '../GameObject';
 
 class Background extends GameObject {
   constructor(color, width, height) {
-    super(0, 0, Background.shape());
+    super();
+    this.x = 0;
+    this.y = 0;
     this.color = color;
     this.width = width;
     this.height = height;
+
+    this.makeShape();
   }
 
-  draw(context) {
+  makeShape() {
     super.shape = Background.shape(
       this.x,
       this.y,
@@ -16,6 +20,10 @@ class Background extends GameObject {
       this.height,
       this.color
     );
+  }
+
+  draw(context) {
+    this.makeShape();
     super.draw(context);
   }
 }
