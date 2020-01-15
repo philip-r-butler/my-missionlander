@@ -64,7 +64,7 @@ Game.prototype.createGameObjects = function() {
     this.canvas.width,
     this.canvas.height
   );
-  this.stars = new Stars(20, this.canvas.width, this.canvas.height);
+  this.stars = new Stars(0.04, this.canvas.width, this.canvas.height);
   this.lander = new Lander(110, 150);
   //     this.platform = new GameObject(x, y, shape);
 };
@@ -84,8 +84,8 @@ Game.prototype.update = function() {
 Game.prototype.draw = function() {
   this.background.draw(this.context);
   this.stars.draw(this.context);
-  this.lander.draw(this.context);
   this.landscape.draw(this.context);
+  this.lander.draw(this.context);
 };
 
 Game.prototype.animate = function() {

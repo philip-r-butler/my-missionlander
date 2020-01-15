@@ -1,33 +1,36 @@
 import GameObject from '../GameObject';
 
-class Stars extends GameObject {
-  constructor(number, width, height) {
-    super(0, 0);
-    this.width = width;
-    this.height = height;
-    this.number = number;
-    super.shape = this.makeShape();
-  }
+const Stars = function(density, width, height) {
+  GameObject.call(this, 0, 0, []);
+  this.width = width;
+  this.height = height;
+  this.density = density;
+  this.shape = this.makeShape();
+};
 
-  makeShape() {
-    return Stars.shape(
-      this.numberOfStars(this.number, this.width),
-      this.width,
-      this.height
-    );
-  }
+Stars.prototype = Object.create(GameObject.prototype);
 
-  numberOfStars(number, width) {
-    return Math.floor(number * width / 500);
-  }
+Stars.prototype.constructor = Stars;
 
-  setSize(width, height) {
-    super.setSize(width, height);
-    super.shape = this.makeShape();
-  }
-}
+Stars.prototype.makeShape = function() {
+  return Stars.shape(
+    this.numberOfStars(this.density, this.width),
+    this.width,
+    this.height
+  );
+};
 
-Stars.makeStars = (number = 20, width = 1000, height = 500) =>
+Stars.prototype.numberOfStars = function(density, width) {
+  return Math.floor(density * width);
+};
+
+Stars.prototype.setSize = function(width, height) {
+  this.width = width;
+  this.height = height;
+  this.shape = this.makeShape();
+};
+
+Stars.makeStars = (number = 0, width = 0, height = 0) =>
   [...Array(number)]
     .map(() => [
       {
@@ -42,7 +45,7 @@ Stars.makeStars = (number = 20, width = 1000, height = 500) =>
     ])
     .flat();
 
-Stars.shape = (number, width, height) => {
+Stars.shape = (number = 0, width = 0, height = 0) => {
   const start = [
     { cmd: 'strokeStyle', style: 'white' },
     { cmd: 'lineWidth', width: 1 },
