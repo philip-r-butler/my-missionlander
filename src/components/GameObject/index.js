@@ -7,6 +7,11 @@ class GameObject {
     this.shape = shape;
   }
 
+  setSize(width, height) {
+    this.width = width;
+    this.height = height;
+  }
+
   draw(context) {
     this.drawShape(context, this.shape);
   }
