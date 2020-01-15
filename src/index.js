@@ -1,7 +1,7 @@
 import './assets/css/common.css';
 import Game from './components/Game';
 
-(global => {
+(function(global) {
   const game = new Game(global, 'canvas');
-  game.start();
-})(window);
+  game.run();
+}(window));
