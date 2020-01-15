@@ -1,71 +1,75 @@
 import GameObject from '../GameObject';
 
-class Lander extends GameObject {
-  constructor(x, y) {
-    super(x, y, Lander.shape());
+const Lander = function(x, y) {
+  GameObject.call(this, x, y, []);
+  this.deltaX = 0.5;
+  this.deltaY = 0;
+  this.rotation = 0;
+  this.thrustPower = 0;
+  this.shape = Lander.shape();
+};
 
-    this.deltaX = 0.5;
-    this.deltaY = 0;
-    this.rotation = 0;
-    this.thrustPower = 0;
-  }
+Lander.prototype = Object.create(GameObject.prototype);
 
-  move(isUpPressed, isRightPressed, isLeftPressed) {
-    if (isUpPressed) this.thrustOn();
-    if (!isUpPressed) this.thrustOff();
+Lander.prototype.constructor = Lander;
 
-    if (isRightPressed && !isLeftPressed) this.rotate(true);
-    if (isLeftPressed && !isRightPressed) this.rotate(false);
+Lander.prototype.move = function(isUpPressed, isRightPressed, isLeftPressed) {
+  if (isUpPressed) this.thrustOn();
+  if (!isUpPressed) this.thrustOff();
 
-    this.accelerate();
+  if (isRightPressed && !isLeftPressed) this.rotate(true);
+  if (isLeftPressed && !isRightPressed) this.rotate(false);
 
-    this.x += this.deltaX;
-    this.y += this.deltaY;
+  this.accelerate();
 
-    super.shape = Lander.shape();
-  }
+  this.x += this.deltaX;
+  this.y += this.deltaY;
+};
 
-  rotate(clockwise) {
-    const maxRotation = 2 * Math.PI;
-    if (clockwise) this.rotation += Lander.rotationAcceleration;
-    if (!clockwise) this.rotation -= Lander.rotationAcceleration;
-    if (this.rotation > maxRotation) this.rotation = this.rotation - maxRotation;
-    if (this.rotation < 0) this.rotation = this.rotation + maxRotation;
-  }
+Lander.prototype.rotate = function(clockwise) {
+  const maxRotation = 2 * Math.PI;
+  if (clockwise) this.rotation += Lander.rotationAcceleration;
+  if (!clockwise) this.rotation -= Lander.rotationAcceleration;
+  if (this.rotation > maxRotation)
+    this.rotation = this.rotation - maxRotation;
+  if (this.rotation < 0) this.rotation = this.rotation + maxRotation;
+};
 
-  accelerate() {
-    this.deltaX *= (1 - Lander.drag);
-    this.deltaY = this.deltaY > Lander.maxDelta
-      ? Lander.maxDelta
-      : this.deltaY < -Lander.maxDelta
-        ? -Lander.maxDelta
-        : this.deltaY + Lander.gravity;
-  }
+Lander.prototype.accelerate = function() {
+  this.deltaX *= 1 - Lander.drag;
+  this.deltaY = this.deltaY > Lander.maxDelta
+    ? Lander.maxDelta
+    : this.deltaY < -Lander.maxDelta
+      ? -Lander.maxDelta
+      : this.deltaY + Lander.gravity;
+};
 
-  thrustOn() {
-    this.thrustPower += (1 - this.thrustPower) * 0.2;
-    const acceleration = this.thrustPower * Lander.thrustAcceleration;
-    this.deltaX += acceleration * Math.sin(this.rotation);
-    this.deltaY -= acceleration * Math.cos(this.rotation);
-  }
+Lander.prototype.thrustOn = function() {
+  this.thrustPower += (1 - this.thrustPower) * 0.2;
+  const acceleration = this.thrustPower * Lander.thrustAcceleration;
+  this.deltaX += acceleration * Math.sin(this.rotation);
+  this.deltaY -= acceleration * Math.cos(this.rotation);
+};
 
-  thrustOff() {
-    this.thrustPower = 0;
-  }
+Lander.prototype.thrustOff = function() {
+  this.thrustPower = 0;
+};
 
-  draw(context) {
-    const cx = this.x + Lander.width;
-    const cy = this.y + Lander.height / 2;
+Lander.prototype.draw = function(context) {
+  const cx = this.x + Lander.width;
+  const cy = this.y + Lander.height / 2;
 
-    context.save();
-    context.translate(cx, cy);
-    if (this.rotation > 0) context.rotate(this.rotation);
-    super.draw(context);
-    if (this.thrustPower > 0) super.drawShape(context, Lander.thrust());
-    context.translate(-cx, -cy);
-    context.restore();
-  }
-}
+  context.save();
+  context.translate(cx, cy);
+
+  if (this.rotation > 0) context.rotate(this.rotation);
+
+  GameObject.prototype.drawShape(context, this.shape);
+  if (this.thrustPower > 0) GameObject.prototype.drawShape(context, Lander.thrust());
+
+  context.translate(-cx, -cy);
+  context.restore();
+};
 
 Lander.gravity = 0.0006;
 Lander.drag = 0.0003;
