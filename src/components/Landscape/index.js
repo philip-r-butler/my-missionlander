@@ -13,24 +13,24 @@ Landscape.prototype = Object.create(GameObject.prototype);
 
 Landscape.prototype.constructor = Landscape;
 
-Landscape.prototype.makeShape = function() {
-  this.makePeaks();
-  this.shape = Landscape.shape(this.width, this.height, this.peaks);
-};
-
-Landscape.prototype.makePeaks = function() {
+Landscape.prototype.makePoints = function() {
   const noise = new Noise();
   noise.noiseSeed(Landscape.seed);
 
-  const points = Array.from({ length: this.width }, (_, increment) =>
+  const data = Array.from({ length: this.width }, (_, increment) =>
     noise.get(increment * Landscape.smoothness)
   );
-  const minPoint = Math.min(...points);
-  const range = Math.max(...points) - minPoint;
+  const minPoint = Math.min(...data);
+  const range = Math.max(...data) - minPoint;
 
-  this.peaks = points.map(
-    p => this.height * (1 + (Landscape.scale * (p - minPoint - range)) / range)
+  this.points = data.map(
+    point => this.height * (1 + (Landscape.range * (point - minPoint - range)) / range)
   );
+};
+
+Landscape.prototype.makeShape = function() {
+  this.makePoints();
+  this.shape = Landscape.shape(this.width, this.height, this.points);
 };
 
 Landscape.prototype.setSize = function(width, height) {
@@ -39,16 +39,20 @@ Landscape.prototype.setSize = function(width, height) {
   this.makeShape();
 };
 
+Landscape.prototype.getPoints = function() {
+  return this.points;
+};
+
 Landscape.seed = Math.random() * 100;
-Landscape.scale = 0.6;
+Landscape.range = 0.6;
 Landscape.smoothness = 0.003;
 
 Landscape.shape = (width = 0, height = 0, peaks = []) => {
   const firstPeak = peaks[0];
   const lastPeak = peaks[peaks.length - 1];
   const start = [
-    { cmd: 'strokeStyle', style: 'white' },
-    { cmd: 'lineWidth', width: 1 },
+    { cmd: 'strokeStyle', style: '#666666' },
+    { cmd: 'lineWidth', width: 2 },
     { cmd: 'beginPath' },
     { cmd: 'moveTo', x: -1, y: height + 1 },
     { cmd: 'lineTo', x: -1, y: firstPeak },
