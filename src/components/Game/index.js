@@ -1,6 +1,7 @@
 import Background from '../Background';
 import Lander from '../Lander';
 import Landscape from '../Landscape';
+import Platform from '../Platform';
 import Stars from '../Stars';
 
 function Game(global, canvasId) {
@@ -35,7 +36,7 @@ Game.prototype.createKeyCommands = function() {
   this.isRightPressed = false;
 
   this.onKeyDownCommnands = {
-    ArrowUp: () => this.isUpPressed = true,
+    ArrowUp: () => (this.isUpPressed = true),
     ArrowLeft: () => {
       this.isRightPressed = false;
       this.isLeftPressed = true;
@@ -47,9 +48,9 @@ Game.prototype.createKeyCommands = function() {
   };
 
   this.onKeyUpCommands = {
-    ArrowUp: () => this.isUpPressed = false,
-    ArrowLeft: () => this.isLeftPressed = false,
-    ArrowRight: () => this.isRightPressed = false,
+    ArrowUp: () => (this.isUpPressed = false),
+    ArrowLeft: () => (this.isLeftPressed = false),
+    ArrowRight: () => (this.isRightPressed = false),
   };
 };
 
@@ -64,9 +65,13 @@ Game.prototype.createGameObjects = function() {
     this.canvas.width,
     this.canvas.height
   );
+  this.platform = new Platform(
+    this.canvas.width,
+    this.canvas.height,
+    this.landscape
+  );
   this.stars = new Stars(0.04, this.canvas.width, this.canvas.height);
-  this.lander = new Lander(110, 150);
-  //     this.platform = new GameObject(x, y, shape);
+  this.lander = new Lander(50, 50);
 };
 
 Game.prototype.setSize = function() {
@@ -84,6 +89,7 @@ Game.prototype.update = function() {
 Game.prototype.draw = function() {
   this.background.draw(this.context);
   this.stars.draw(this.context);
+  this.platform.draw(this.context);
   this.landscape.draw(this.context);
   this.lander.draw(this.context);
 };
@@ -109,6 +115,7 @@ Game.prototype.onResize = function() {
   this.background.setSize(this.canvas.width, this.canvas.height);
   this.stars.setSize(this.canvas.width, this.canvas.height);
   this.landscape.setSize(this.canvas.width, this.canvas.height);
+  this.platform.setSize(this.canvas.width, this.canvas.height);
   this.draw();
 };
 
