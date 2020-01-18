@@ -1,4 +1,5 @@
 import GameObject from '../GameObject';
+import RandomNumberInRange from 'src/utils/RandomNumberInRange';
 
 const Lander = function(x, y) {
   GameObject.call(this, x, y, []);
@@ -65,7 +66,7 @@ Lander.prototype.draw = function(context) {
   if (this.rotation > 0) context.rotate(this.rotation);
 
   GameObject.prototype.drawShape(context, this.shape);
-  if (this.thrustPower > 0) GameObject.prototype.drawShape(context, Lander.thrust());
+  if (this.thrustPower > 0) GameObject.prototype.drawShape(context, Lander.thrust(this.thrustPower));
 
   context.translate(-cx, -cy);
   context.restore();
@@ -73,11 +74,14 @@ Lander.prototype.draw = function(context) {
 
 Lander.gravity = 0.0006;
 Lander.drag = 0.0003;
-Lander.thrustAcceleration = 0.0015;
+Lander.thrustAcceleration = 0.002;
 Lander.rotationAcceleration = 0.0174;
 Lander.maxDelta = 0.35;
-Lander.width = 10;
-Lander.height = 10;
+Lander.width = 5;
+Lander.height = 6;
+Lander.thrustGap = 2;
+Lander.thrustWidth = Lander.width / 2;
+Lander.thrustMaxHeight = Lander.height * 1.25;
 
 Lander.shape = () => {
   return [
@@ -94,19 +98,17 @@ Lander.shape = () => {
   ];
 };
 
-Lander.thrust = () => {
-  const gap = 3;
-  const width = Lander.width / 2;
-  const height = 15;
+Lander.thrust = (power) => {
+  const height = Lander.thrustMaxHeight * 3 * power * RandomNumberInRange(0.75, 1);
 
   return [
-    { cmd: 'strokeStyle', style: 'white' },
+    { cmd: 'strokeStyle', style: 'gray' },
     { cmd: 'fillStyle', style: 'black' },
     { cmd: 'lineWidth', width: 1 },
     { cmd: 'beginPath' },
-    { cmd: 'moveTo', x: width, y: Lander.height + gap },
-    { cmd: 'lineTo', x: 0, y: Lander.height + height + gap },
-    { cmd: 'lineTo', x: -width, y: Lander.height + gap },
+    { cmd: 'moveTo', x: Lander.thrustWidth, y: Lander.height + Lander.thrustGap },
+    { cmd: 'lineTo', x: 0, y: Lander.height + height + Lander.thrustGap },
+    { cmd: 'lineTo', x: -Lander.thrustWidth, y: Lander.height + Lander.thrustGap },
     { cmd: 'closePath' },
     { cmd: 'fill' },
     { cmd: 'stroke' },
