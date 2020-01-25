@@ -1,26 +1,7 @@
-const Collision = function(lander, landscape) {
-  this.setLander(lander);
-  this.setLandscape(landscape);
-};
+const Collision = function() {};
 
-Collision.prototype.update = function(lander, landscape) {
-  this.setLander(lander);
-  this.setLandscape(landscape);
-};
-
-Collision.prototype.setLander = function(lander) {
-  this.lander = lander;
-};
-
-Collision.prototype.setLandscape = function(landscape) {
-  this.landscape = landscape;
-};
-
-Collision.prototype.isCollision = function() {
-  const landerLeftX = Math.ceil(this.lander.x - this.lander.width);
-  const landerRightX = Math.ceil(this.lander.x + this.lander.width);
-  const landerY = this.lander.y + this.lander.height;
-  return landerY >= this.landscape.points[landerLeftX] || landerY >= this.landscape.points[landerRightX];
+Collision.prototype.isCollision = function(projectile, boundary) {
+  return Object.keys(projectile).some(key => projectile[key] >= boundary[Math.floor(parseFloat(key))] - 1);
 };
 
 export default Collision;
