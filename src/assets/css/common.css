@@ -35,18 +35,6 @@ html, body {
     width: 100%;
 }
 
-#score, #altitude {
-    top: 4vw;
-}
-
-#time, #hSpeed {
-    top: 6vw;
-}
-
-#fuel, #vSpeed {
-    top: 8vw;
-}
-
 #status {
     position: relative;
     left: 6vw;
@@ -62,4 +50,16 @@ html, body {
 #status>div, #navigation>div {
     display: flex;
     justify-content: space-between;
+}
+
+.first {
+    top: 4vw;
+}
+
+.second {
+    top: 6vw;
+}
+
+.third {
+    top: 8vw;
 }
