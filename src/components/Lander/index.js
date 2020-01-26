@@ -3,10 +3,11 @@ import RandomNumberInRange from 'src/utils/RandomNumberInRange';
 
 const Lander = function(x, y) {
   GameObject.call(this, x, y, []);
-  this.deltaX = 0.5;
-  this.deltaY = 0;
+  this.deltaX = Lander.initialDeltaX;
+  this.deltaY = Lander.initialDeltaY;
   this.rotation = 0;
   this.thrustPower = 0;
+  this.fuel = Lander.initialFuel;
   this.shape = Lander.shape();
 };
 
@@ -18,8 +19,8 @@ Lander.prototype.move = function(isUpPressed, isRightPressed, isLeftPressed) {
   if (isUpPressed) this.thrustOn();
   if (!isUpPressed) this.thrustOff();
 
-  if (isRightPressed && !isLeftPressed) this.rotate(true);
-  if (isLeftPressed && !isRightPressed) this.rotate(false);
+  if (isRightPressed && !isLeftPressed) this.rotateClockwise();
+  if (isLeftPressed && !isRightPressed) this.rotateCounterClockwise();
 
   this.accelerate();
 
@@ -27,13 +28,28 @@ Lander.prototype.move = function(isUpPressed, isRightPressed, isLeftPressed) {
   this.y += this.deltaY;
 };
 
-Lander.prototype.rotate = function(clockwise) {
-  const maxRotation = 2 * Math.PI;
-  if (clockwise) this.rotation += Lander.rotationAcceleration;
+Lander.prototype.collisionPoints = function() {
+  return {
+    [this.x]: this.y - Lander.halfHeight,
+    [this.x - Lander.halfWidth]: this.y + Lander.halfHeight,
+    [this.x + Lander.halfWidth]: this.y + Lander.halfHeight,
+  };
+};
+
+Lander.prototype.rotateClockwise = function() {
+  this.rotation += Lander.rotationAcceleration;
+  this.checkRotation();
+};
+
+Lander.prototype.rotateCounterClockwise = function(clockwise) {
   if (!clockwise) this.rotation -= Lander.rotationAcceleration;
-  if (this.rotation > maxRotation)
-    this.rotation = this.rotation - maxRotation;
-  if (this.rotation < 0) this.rotation = this.rotation + maxRotation;
+  this.checkRotation();
+};
+
+Lander.prototype.checkRotation = function() {
+  if (this.rotation > Lander.maxRotation)
+    this.rotation = this.rotation - Lander.maxRotation;
+  if (this.rotation < 0) this.rotation = this.rotation + Lander.maxRotation;
 };
 
 Lander.prototype.accelerate = function() {
@@ -46,7 +62,14 @@ Lander.prototype.accelerate = function() {
 };
 
 Lander.prototype.thrustOn = function() {
+  if (this.fuel < 1) {
+    this.thrustPower = 0;
+    this.fuel = 0;
+    return;
+  }
+
   this.thrustPower += (1 - this.thrustPower) * 0.2;
+  this.fuel -= this.thrustPower * (1 - Lander.fuelEfficiency);
   const acceleration = this.thrustPower * Lander.thrustAcceleration;
   this.deltaX += acceleration * Math.sin(this.rotation);
   this.deltaY -= acceleration * Math.cos(this.rotation);
@@ -56,31 +79,48 @@ Lander.prototype.thrustOff = function() {
   this.thrustPower = 0;
 };
 
-Lander.prototype.draw = function(context) {
-  const cx = this.x + Lander.width;
-  const cy = this.y + Lander.height / 2;
+Lander.prototype.canLand = function() {
+  return (
+    (this.rotation <= Lander.landingRotationTolerance
+      || this.rotation >= Math.PI * 2 - Lander.landingRotationTolerance)
+    && Math.abs(this.deltaX) <= Lander.landingMaxDelta
+    && Math.abs(this.deltaY) <= Lander.landingMaxDelta
+  );
+};
 
+Lander.prototype.draw = function(context) {
   context.save();
-  context.translate(cx, cy);
+  context.translate(this.x, this.y);
 
   if (this.rotation > 0) context.rotate(this.rotation);
 
   GameObject.prototype.drawShape(context, this.shape);
-  if (this.thrustPower > 0) GameObject.prototype.drawShape(context, Lander.thrust(this.thrustPower));
+  if (this.thrustPower > 0)
+    GameObject.prototype.drawShape(context, Lander.thrust(this.thrustPower));
 
-  context.translate(-cx, -cy);
+  context.translate(-this.x, -this.y);
   context.restore();
 };
 
-Lander.gravity = 0.0006;
+Lander.initialDeltaX = 0.5;
+Lander.initialDeltaY = 0;
+Lander.initialFuel = 1000;
+Lander.fuelEfficiency = 0.5;
+Lander.gravity = 0.001;
 Lander.drag = 0.0003;
 Lander.thrustAcceleration = 0.002;
 Lander.rotationAcceleration = 0.0174;
-Lander.maxDelta = 0.35;
-Lander.width = 5;
-Lander.height = 6;
+Lander.maxDelta = 1;
+Lander.maxRotation = 2 * Math.PI;
+Lander.landingRotationTolerance = 0.1;
+Lander.landingMaxDelta = 0.1;
+Lander.width = 10;
+Lander.height = 12;
+Lander.halfWidth = Lander.width / 2;
+Lander.halfHeight = Lander.height / 2;
 Lander.thrustGap = 2;
-Lander.thrustWidth = Lander.width / 2;
+Lander.thrustWidth = Lander.halfWidth;
+Lander.halfThrustWidth = Lander.thrustWidth / 2;
 Lander.thrustMaxHeight = Lander.height * 1.25;
 
 Lander.shape = () => {
@@ -89,26 +129,34 @@ Lander.shape = () => {
     { cmd: 'fillStyle', style: 'black' },
     { cmd: 'lineWidth', width: 1 },
     { cmd: 'beginPath' },
-    { cmd: 'moveTo', x: 0, y: -Lander.height },
-    { cmd: 'lineTo', x: Lander.width, y: Lander.height },
-    { cmd: 'lineTo', x: -Lander.width, y: Lander.height },
+    { cmd: 'moveTo', x: 0, y: -Lander.halfHeight },
+    { cmd: 'lineTo', x: Lander.halfWidth, y: Lander.halfHeight },
+    { cmd: 'lineTo', x: -Lander.halfWidth, y: Lander.halfHeight },
     { cmd: 'closePath' },
     { cmd: 'fill' },
     { cmd: 'stroke' },
   ];
 };
 
-Lander.thrust = (power) => {
-  const height = Lander.thrustMaxHeight * 3 * power * RandomNumberInRange(0.75, 1);
+Lander.thrust = power => {
+  const height = Lander.thrustMaxHeight * 2 * power * RandomNumberInRange(0.75, 1);
 
   return [
     { cmd: 'strokeStyle', style: 'gray' },
     { cmd: 'fillStyle', style: 'black' },
     { cmd: 'lineWidth', width: 1 },
     { cmd: 'beginPath' },
-    { cmd: 'moveTo', x: Lander.thrustWidth, y: Lander.height + Lander.thrustGap },
-    { cmd: 'lineTo', x: 0, y: Lander.height + height + Lander.thrustGap },
-    { cmd: 'lineTo', x: -Lander.thrustWidth, y: Lander.height + Lander.thrustGap },
+    {
+      cmd: 'moveTo',
+      x: Lander.halfThrustWidth,
+      y: Lander.halfHeight + Lander.thrustGap,
+    },
+    { cmd: 'lineTo', x: 0, y: Lander.halfHeight + height + Lander.thrustGap },
+    {
+      cmd: 'lineTo',
+      x: -Lander.halfThrustWidth,
+      y: Lander.halfHeight + Lander.thrustGap,
+    },
     { cmd: 'closePath' },
     { cmd: 'fill' },
     { cmd: 'stroke' },
