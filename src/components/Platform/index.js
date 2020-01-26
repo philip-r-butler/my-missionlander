@@ -14,25 +14,24 @@ Platform.prototype.constructor = Platform;
 
 Platform.prototype.makeShape = function() {
   const platforms = this.getPlatforms(this.landscape.getPoints());
-  const points = this.makePoints(platforms);
-  this.shape = Platform.shape(points, platforms);
+  this.points = this.makePoints(platforms);
+  this.shape = Platform.shape(this.points, platforms);
 };
 
 Platform.prototype.getPlatforms = function(landscape) {
   const slopeTolerance = 0.02;
   const spacingTolerance = 50;
-  return landscape
-    .map((item, index, array) =>
-      index > 0
-        ? { x: index - 1, y: item, slope: array[index - 1] - item }
-        : { x: index, y: item, slope: array[index] - item }
-    )
+  return Object.keys(landscape)
+    .map((key, index, array) => {
+      const y = landscape[key];
+      return index > 0
+        ? { x: index - 1, y, slope: landscape[array[index - 1]] - y }
+        : { x: index, y, slope: 0 };
+    })
     .filter((item, index, array) =>
       index > 0
-        ? (item.slope > slopeTolerance
-            && array[index - 1].slope < slopeTolerance)
-          || (item.slope < slopeTolerance
-            && array[index - 1].slope > slopeTolerance)
+        ? (item.slope > slopeTolerance && array[index - 1].slope < slopeTolerance)
+          || (item.slope < slopeTolerance && array[index - 1].slope > slopeTolerance)
         : false
     )
     .filter((item, index, array) =>
@@ -50,7 +49,11 @@ Platform.prototype.makePoints = function(platforms) {
         y: Math.floor(point.y - 8),
       }))
     )
-    .flat();
+    .flat()
+    .reduce((acc, item) => {
+      acc[item.x] = item.y;
+      return acc;
+    }, {});
 };
 
 Platform.prototype.setSize = function(width, height) {
@@ -66,13 +69,13 @@ Platform.shape = (points = [], platforms = []) => {
     { cmd: 'beginPath' },
   ];
   const start = [
-    { cmd: 'strokeStyle', style: 'white' },
+    { cmd: 'strokeStyle', style: 'lightGray' },
     { cmd: 'lineWidth', width: 1 },
     { cmd: 'beginPath' },
   ];
   const end = [{ cmd: 'stroke' }];
-  const verticals = platforms.map(
-    point => [
+  const verticals = platforms
+    .map(point => [
       {
         cmd: 'moveTo',
         x: point.x + 1,
@@ -80,12 +83,12 @@ Platform.shape = (points = [], platforms = []) => {
       },
       { cmd: 'lineTo', x: point.x + 1, y: point.y - 8 },
       { cmd: 'stroke' },
-    ]
-  ).flat();
-  const horizontals = points.map(point => ({
+    ])
+    .flat();
+  const horizontals = Object.keys(points).map(key => ({
     cmd: 'rect',
-    x: point.x,
-    y: point.y,
+    x: key,
+    y: points[key],
     width: 1,
     height: 1,
   }));
