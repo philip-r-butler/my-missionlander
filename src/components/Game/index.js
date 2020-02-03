@@ -104,7 +104,7 @@ Game.prototype.update = function() {
   this.crash.update();
   this.landing.update();
   this.explosion.update();
-  this.gameInformation.update(this.lander, this.landscape.collisionPoints);
+  if (!this.gameStopped) this.gameInformation.update(this.lander, this.landscape.collisionPoints);
 };
 
 Game.prototype.draw = function() {
