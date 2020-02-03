@@ -1,9 +1,11 @@
-import Lander from '../Lander';
+import Lander from 'components/Lander';
 
 const GameInformation = function(global) {
   this.window = global;
   this.setDisplayNodes();
   this.score = 0;
+  this.startTime = Date.now();
+  this.time = '';
 };
 
 GameInformation.prototype.setDisplayNodes = function() {
@@ -17,16 +19,22 @@ GameInformation.prototype.setDisplayNodes = function() {
 
 GameInformation.prototype.update = function(lander, landscape) {
   this.score = 0;
-  this.time = 1;
+  this.time = this.formatElapsedTime();
   this.fuel = this.formatFuel(lander.fuel);
   this.altitude = this.formatAltitude(
     lander.x + Lander.halfWidth,
     lander.x - Lander.halfWidth,
     lander.y - Lander.halfHeight,
-    landscape.points
+    landscape
   );
   this.hSpeed = this.formatSpeed(lander.deltaX);
   this.vSpeed = this.formatSpeed(lander.deltaY);
+};
+
+GameInformation.prototype.formatElapsedTime = function() {
+  const seconds = this.getElapsedSeconds();
+  const minutes = Math.floor(seconds / 60);
+  return minutes.toString().padStart(2, '0') + ':' + Math.floor(seconds - (minutes * 60)).toString().padStart(2, '0');
 };
 
 GameInformation.prototype.formatFuel = function(fuel) {
@@ -41,6 +49,10 @@ GameInformation.prototype.formatAltitude = function(x1, x2, y, floor) {
 
 GameInformation.prototype.formatSpeed = function(delta) {
   return Math.floor(delta * 100).toString();
+};
+
+GameInformation.prototype.getElapsedSeconds = function() {
+  return Math.max((20) - (Date.now() - this.startTime) / 1000, 0);
 };
 
 GameInformation.prototype.draw = function() {

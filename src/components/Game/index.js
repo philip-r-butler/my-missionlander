@@ -1,29 +1,36 @@
-import Background from '../Background';
-import Lander from '../Lander';
-import Landscape from '../Landscape';
-import Platform from '../Platform';
-import Stars from '../Stars';
-import Collision from '../Collision';
-import GameInformation from '../GameInformation';
+import Background from 'components/Background';
+import Lander from 'components/Lander';
+import Landscape from 'components/Landscape';
+import Platform from 'components/Platform';
+import Stars from 'components/Stars';
+import Collision from 'components/Collision';
+import Explosion from 'components/Explosion';
+import GameInformation from 'components/GameInformation';
 
 function Game(global, canvasId) {
   this.window = global;
   this.canvas = this.window.document.getElementById(canvasId);
   this.context = this.canvas.getContext('2d');
+  this.winMessage = this.window.document.getElementById('win');
+  this.looseMessage = this.window.document.getElementById('loose');
 
-  this.setSize();
-  this.create();
-  this.draw();
-}
+  this.animate = this.animate.bind(this);
 
-Game.prototype.run = function() {
-  this.window.requestAnimationFrame(this.animate.bind(this));
-};
-
-Game.prototype.create = function() {
   this.createEventListeners();
   this.createKeyCommands();
+
+  this.setSize();
+}
+
+Game.prototype.start = function() {
+
+  this.winMessage.style.display = 'none';
+  this.looseMessage.style.display = 'none';
+  this.gameStopped = false;
+  this.animationStopped = false;
+
   this.createGameObjects();
+  this.animate();
 };
 
 Game.prototype.createEventListeners = function() {
@@ -37,7 +44,7 @@ Game.prototype.createKeyCommands = function() {
   this.isLeftPressed = false;
   this.isRightPressed = false;
 
-  this.onKeyDownCommnands = {
+  this.onKeyDownCommands = {
     ArrowUp: () => (this.isUpPressed = true),
     ArrowLeft: () => {
       this.isRightPressed = false;
@@ -46,6 +53,9 @@ Game.prototype.createKeyCommands = function() {
     ArrowRight: () => {
       this.isLeftPressed = false;
       this.isRightPressed = true;
+    },
+    ' ': () => {
+      if (this.gameStopped) this.start();
     },
   };
 
@@ -74,63 +84,75 @@ Game.prototype.createGameObjects = function() {
   );
   this.stars = new Stars(0.04, this.canvas.width, this.canvas.height);
   this.lander = new Lander(50, 50);
-  this.collision = new Collision();
+  this.crash = new Collision(this.lander, this.landscape);
+  this.landing = new Collision(this.lander, this.platform);
+  this.explosion = new Explosion(15, this.landscape);
   this.gameInformation = new GameInformation(this.window);
+
 };
 
 Game.prototype.setSize = function() {
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+  const width = this.window.innerWidth;
+  const height = this.window.innerHeight;
 
   this.canvas.width = width;
   this.canvas.height = height;
 };
 
 Game.prototype.update = function() {
-  this.lander.move(this.isUpPressed, this.isRightPressed, this.isLeftPressed);
-  this.gameInformation.update(this.lander, this.landscape);
+  this.lander.update(this.isUpPressed, this.isRightPressed, this.isLeftPressed);
+  this.crash.update();
+  this.landing.update();
+  this.explosion.update();
+  this.gameInformation.update(this.lander, this.landscape.collisionPoints);
 };
 
 Game.prototype.draw = function() {
   this.background.draw(this.context);
   this.stars.draw(this.context);
   this.platform.draw(this.context);
+  this.explosion.draw(this.context);
   this.landscape.draw(this.context);
   this.lander.draw(this.context);
   this.gameInformation.draw();
 };
 
-Game.prototype.animate = function() {
-  const landerCanLand = this.lander.canLand();
-  const lander = this.lander.collisionPoints();
-  const isCollisionWithPlatform = this.collision.isCollision(
-    lander,
-    this.platform.points
-  );
-  const isCollisionWithLandscape = this.collision.isCollision(
-    lander,
-    this.landscape.points
-  );
-  const isCollision = isCollisionWithLandscape || isCollisionWithPlatform;
-  const isLanderOnPlatform = Object.keys(lander).every(
-    key => this.platform.points[Math.floor(key)]
-  );
+Game.prototype.win = function() {
+  this.winMessage.style.display = 'block';
+};
 
-  const isCrashed = isCollision && !(isLanderOnPlatform && landerCanLand);
-  const isLanded = isCollision && isLanderOnPlatform && landerCanLand;
+Game.prototype.loose = function() {
+  this.looseMessage.style.display = 'block';
+};
+
+Game.prototype.animate = function() {
+  if (!this.lander.isCrashed && !this.lander.isLanded) {
+    this.lander.isLanded = this.landing.exists && this.landing.inside && this.lander.canLand;
+    this.lander.isCrashed = this.crash.exists || (this.landing.exists && !(this.landing.inside && this.lander.canLand));
+  }
+
+  if (this.lander.isCrashed) {
+    this.gameStopped = true;
+    if (!this.explosion.active) this.explosion.explode(this.lander);
+    if (this.explosion.active && !this.explosion.isAlive()) this.animationStopped = true;
+    this.loose();
+  }
+
+  if (this.lander.isLanded) {
+    this.gameStopped = true;
+    this.animationStopped = true;
+    this.win();
+  }
 
   this.update();
   this.draw();
 
-  if (isLanded) console.log('LANDED');
-  if (isCrashed) console.log('BIG CRASH');
-  if (!isCrashed && !isLanded) {
-    window.requestAnimationFrame(this.animate.bind(this));
-  }
+  if (!this.animationStopped) this.window.requestAnimationFrame(this.animate);
 };
 
 Game.prototype.onKeyDown = function(e) {
-  const keyCommands = this.onKeyDownCommnands;
+  const keyCommands = this.onKeyDownCommands;
+
   if (e.key in keyCommands) keyCommands[e.key]();
 };
 

@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
@@ -29,7 +30,14 @@ module.exports = {
     historyApiFallback: true,
     stats: 'minimal',
   },
-  resolve: { extensions: ['.js', '.jsx', '.mjs'] },
+  resolve: {
+    alias: {
+      utils: path.resolve(__dirname, 'src/utils/'),
+      components: path.resolve(__dirname, 'src/components/'),
+      css: path.resolve(__dirname, 'src/assets/css'),
+    },
+    extensions: ['.js', '.jsx', '.mjs'],
+  },
   module: {
     rules: [
       {

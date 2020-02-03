@@ -17,6 +17,10 @@ html, body {
     width: 100%;
     height: 100%;
     background: black;
+    color: white;
+    font-family: Bender-Light, monospace;
+    font-size: 1.6vw;
+    letter-spacing: 0.2em;
 }
 
 #canvas {
@@ -24,10 +28,6 @@ html, body {
 }
 
 #information {
-    color: white;
-    font-family: Bender-Light, monospace;
-    font-size: 1.6vw;
-    letter-spacing: 0.2em;
     position: absolute;
     top: 4vw;
     display: flex;
@@ -45,6 +45,22 @@ html, body {
     position: relative;
     right: 6vw;
     width: 35vw;
+}
+
+#messages {
+    font-size: 1.8rem;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#win, #loose {
+    position: absolute;
+    top: 40%;
+    width: 100%;
+    text-align: center;
+    display: none;
 }
 
 #status>div, #navigation>div {

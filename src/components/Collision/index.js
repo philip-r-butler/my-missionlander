@@ -28,7 +28,6 @@ Collision.prototype.update = function() {
   }
 
   this.inside = this.isInside();
-  // console.log(this.inside);
 };
 
 export default Collision;

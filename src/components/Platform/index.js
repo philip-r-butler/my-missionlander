@@ -13,15 +13,15 @@ Platform.prototype = Object.create(GameObject.prototype);
 Platform.prototype.constructor = Platform;
 
 Platform.prototype.makeShape = function() {
-  const platforms = this.getPlatforms(this.landscape.getPoints());
-  this.points = this.makePoints(platforms);
-  this.shape = Platform.shape(this.points, platforms);
+  this.makePlatforms(this.landscape.collisionPoints);
+  this.makeCollisionPoints(this.platforms);
+  this.shape = Platform.shape(this.collisionPoints, this.platforms);
 };
 
-Platform.prototype.getPlatforms = function(landscape) {
+Platform.prototype.makePlatforms = function(landscape) {
   const slopeTolerance = 0.02;
   const spacingTolerance = 50;
-  return Object.keys(landscape)
+  this.platforms = Object.keys(landscape)
     .map((key, index, array) => {
       const y = landscape[key];
       return index > 0
@@ -41,8 +41,8 @@ Platform.prototype.getPlatforms = function(landscape) {
     .slice(0, 5);
 };
 
-Platform.prototype.makePoints = function(platforms) {
-  return platforms
+Platform.prototype.makeCollisionPoints = function(platforms) {
+  this.collisionPoints = platforms
     .map(point =>
       Array.from({ length: 20 }, (_, increment) => ({
         x: Math.floor(point.x - 10 + increment + 1),
