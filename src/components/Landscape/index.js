@@ -5,6 +5,7 @@ const Landscape = function(color, width, height) {
   GameObject.call(this, 0, 0, []);
   this.width = width;
   this.height = height;
+  this.seed = Math.random() * 100;
 
   this.makeShape();
 };
@@ -13,9 +14,9 @@ Landscape.prototype = Object.create(GameObject.prototype);
 
 Landscape.prototype.constructor = Landscape;
 
-Landscape.prototype.makePoints = function() {
+Landscape.prototype.makeCollisionPoints = function() {
   const noise = new Noise();
-  noise.noiseSeed(Landscape.seed);
+  noise.noiseSeed(this.seed);
 
   const data = Array.from({ length: this.width }, (_, increment) =>
     noise.get(increment * Landscape.smoothness)
@@ -23,7 +24,7 @@ Landscape.prototype.makePoints = function() {
   const minPoint = Math.min(...data);
   const range = Math.max(...data) - minPoint;
 
-  this.points = data
+  this.collisionPoints = data
     .map((point, i) => {
       return [i, this.height * (1 + (Landscape.range * (point - minPoint - range)) / range)];
     })
@@ -34,8 +35,8 @@ Landscape.prototype.makePoints = function() {
 };
 
 Landscape.prototype.makeShape = function() {
-  this.makePoints();
-  this.shape = Landscape.shape(this.width, this.height, this.points);
+  this.makeCollisionPoints();
+  this.shape = Landscape.shape(this.width, this.height, this.collisionPoints);
 };
 
 Landscape.prototype.setSize = function(width, height) {
@@ -44,11 +45,6 @@ Landscape.prototype.setSize = function(width, height) {
   this.makeShape();
 };
 
-Landscape.prototype.getPoints = function() {
-  return this.points;
-};
-
-Landscape.seed = Math.random() * 100;
 Landscape.range = 0.6;
 Landscape.smoothness = 0.003;
 
