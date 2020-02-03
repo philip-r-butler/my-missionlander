@@ -1,5 +1,5 @@
 import GameObject from '../GameObject';
-import RandomNumberInRange from 'src/utils/RandomNumberInRange';
+import RandomNumberInRange from 'utils/RandomNumberInRange';
 
 const Lander = function(x, y) {
   GameObject.call(this, x, y, []);
@@ -7,15 +7,26 @@ const Lander = function(x, y) {
   this.deltaY = Lander.initialDeltaY;
   this.rotation = 0;
   this.thrustPower = 0;
+  this.canLand = false;
+  this.isLanded = false;
+  this.isCrashed = false;
   this.fuel = Lander.initialFuel;
   this.shape = Lander.shape();
+  this.makeCollisionPoints();
 };
 
 Lander.prototype = Object.create(GameObject.prototype);
 
 Lander.prototype.constructor = Lander;
 
-Lander.prototype.move = function(isUpPressed, isRightPressed, isLeftPressed) {
+Lander.prototype.update = function(isUpPressed, isRightPressed, isLeftPressed) {
+  this.makeCollisionPoints();
+  if (this.isLanded || this.isCrashed) {
+    this.deltaX = 0;
+    this.deltaY = 0;
+    return;
+  }
+
   if (isUpPressed) this.thrustOn();
   if (!isUpPressed) this.thrustOff();
 
@@ -23,16 +34,19 @@ Lander.prototype.move = function(isUpPressed, isRightPressed, isLeftPressed) {
   if (isLeftPressed && !isRightPressed) this.rotateCounterClockwise();
 
   this.accelerate();
+  this.checkCanLand();
 
   this.x += this.deltaX;
   this.y += this.deltaY;
 };
 
-Lander.prototype.collisionPoints = function() {
-  return {
-    [this.x]: this.y - Lander.halfHeight,
-    [this.x - Lander.halfWidth]: this.y + Lander.halfHeight,
-    [this.x + Lander.halfWidth]: this.y + Lander.halfHeight,
+Lander.prototype.makeCollisionPoints = function() {
+  const x = Math.floor(this.x);
+  const w = Math.ceil(Lander.halfWidth);
+  this.collisionPoints = {
+    [x]: this.y - Lander.halfHeight,
+    [x - w]: this.y + Lander.halfHeight,
+    [x + w]: this.y + Lander.halfHeight,
   };
 };
 
@@ -79,23 +93,25 @@ Lander.prototype.thrustOff = function() {
   this.thrustPower = 0;
 };
 
-Lander.prototype.canLand = function() {
-  return (
-    (this.rotation <= Lander.landingRotationTolerance
-      || this.rotation >= Math.PI * 2 - Lander.landingRotationTolerance)
-    && Math.abs(this.deltaX) <= Lander.landingMaxDelta
-    && Math.abs(this.deltaY) <= Lander.landingMaxDelta
+Lander.prototype.checkCanLand = function() {
+  this.canLand = (
+    (this.rotation < Lander.landingRotationTolerance
+      || this.rotation > Math.PI * 2 - Lander.landingRotationTolerance)
+    && Math.abs(this.deltaX) < Lander.landingMaxDelta
+    && Math.abs(this.deltaY) < Lander.landingMaxDelta
   );
 };
 
 Lander.prototype.draw = function(context) {
+  if (this.isCrashed) return;
+
   context.save();
   context.translate(this.x, this.y);
 
   if (this.rotation > 0) context.rotate(this.rotation);
 
   GameObject.prototype.drawShape(context, this.shape);
-  if (this.thrustPower > 0)
+  if (this.thrustPower > 0 && !this.isLanded)
     GameObject.prototype.drawShape(context, Lander.thrust(this.thrustPower));
 
   context.translate(-this.x, -this.y);
@@ -110,7 +126,7 @@ Lander.gravity = 0.001;
 Lander.drag = 0.0003;
 Lander.thrustAcceleration = 0.002;
 Lander.rotationAcceleration = 0.0174;
-Lander.maxDelta = 1;
+Lander.maxDelta = 1.25;
 Lander.maxRotation = 2 * Math.PI;
 Lander.landingRotationTolerance = 0.1;
 Lander.landingMaxDelta = 0.1;
