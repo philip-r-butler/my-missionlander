@@ -25,7 +25,7 @@ GameInformation.prototype.update = function(lander, landscape) {
     lander.x + Lander.halfWidth,
     lander.x - Lander.halfWidth,
     lander.y - Lander.halfHeight,
-    landscape
+    landscape.collisionPoints
   );
   this.hSpeed = this.formatSpeed(lander.deltaX);
   this.vSpeed = this.formatSpeed(lander.deltaY);
@@ -52,7 +52,7 @@ GameInformation.prototype.formatSpeed = function(delta) {
 };
 
 GameInformation.prototype.getElapsedSeconds = function() {
-  return Math.max((20) - (Date.now() - this.startTime) / 1000, 0);
+  return Math.max((180) - (Date.now() - this.startTime) / 1000, 0);
 };
 
 GameInformation.prototype.draw = function() {
