@@ -13,8 +13,6 @@ const Particle = function(x, y, deltaX, deltaY, landscape) {
   this.landscape = landscape;
   this.alive = true;
   this.collision = new Collision(this, this.landscape);
-
-  this.update = this.update.bind(this);
 };
 
 Particle.prototype = Object.create(GameObject.prototype);
@@ -25,7 +23,6 @@ Particle.prototype.makeShape = function() {
   this.height = randomNumberInRange(4, 8);
   this.halfHeight = this.height / 2;
   this.width = (this.height * 5) / 6;
-  this.halfWidth = this.width / 2;
 
   this.shape = Particle.shape(this.width, this.height);
   this.makeCollisionPoints();
@@ -50,16 +47,21 @@ Particle.prototype.initialiseDeltaX = function(initialDelta) {
 };
 
 Particle.prototype.initialiseDeltaY = function(initialDelta) {
-  this.deltaY = (randomNumberInRange(-50, 10) * Math.min(initialDelta, 1.5))
-    / this.height;
+  // prettier ignore
+  this.deltaY = (randomNumberInRange(-50, 10) * Math.min(initialDelta, 1.5)) / this.height;
 };
 
 Particle.prototype.setAlive = function() {
-  this.alive = Math.abs(this.deltaX) > 0.001 && Math.abs(this.deltaY) > 0.001 && this.x > 0 && this.y > 0 && this.y < this.landscape.collisionPoints[Math.floor(this.x)];
+  // prettier ignore
+  this.alive = Math.abs(this.deltaX) > 0.001
+    && Math.abs(this.deltaY) > 0.001
+    && this.x > 0 && this.y > 0
+    && this.y < this.landscape.collisionPoints[Math.floor(this.x)];
 };
 
 Particle.prototype.update = function() {
   if (!this.alive) return;
+  this.setAlive();
 
   this.x += this.deltaX;
   this.y += this.deltaY;
@@ -73,15 +75,15 @@ Particle.prototype.update = function() {
     this.deltaX *= 0.5;
     this.deltaY *= -0.5;
   }
-
-  this.setAlive();
 };
 
 Particle.prototype.draw = function(context) {
+  const x = Math.floor(this.x);
+  const y = Math.floor(this.y);
   context.save();
-  context.translate(this.x, this.y);
+  context.translate(x, y);
   GameObject.prototype.drawShape(context, this.shape);
-  context.translate(-this.x, -this.y);
+  context.translate(-x, -y);
   context.restore();
 };
 

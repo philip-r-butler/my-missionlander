@@ -5,26 +5,22 @@ const Collision = function(obj1, obj2) {
   this.x = undefined;
   this.y = undefined;
 
-  this.isCollision = this.isCollision.bind(this);
-};
+  this.collisionPoints1 = this.obj1.collisionPoints;
+  this.collisionPoints2 = this.obj2.collisionPoints;
 
-Collision.prototype.isCollision = function(key) {
-  return this.cp1[key] > this.cp2[Math.floor(parseFloat(key))];
-};
-
-Collision.prototype.isInside = function() {
-  return Object.keys(this.cp1).every(key => this.cp2[Math.floor(key)]);
+  this.isCollision = (key) => this.collisionPoints1[key] > this.collisionPoints2[Math.floor(parseFloat(key))];
+  this.isInside = () => Object.keys(this.collisionPoints1).every(key => this.collisionPoints2[Math.floor(key)]);
 };
 
 Collision.prototype.update = function() {
-  this.cp1 = this.obj1.collisionPoints;
-  this.cp2 = this.obj2.collisionPoints;
+  this.collisionPoints1 = this.obj1.collisionPoints;
+  this.collisionPoints2 = this.obj2.collisionPoints;
 
-  this.exists = Object.keys(this.cp1).some(this.isCollision);
+  this.exists = Object.keys(this.collisionPoints1).some(this.isCollision);
 
   if (this.exists) {
-    this.x = Object.keys(this.cp1).filter(this.isCollision)[0];
-    this.y = this.cp2[this.x];
+    this.x = Object.keys(this.collisionPoints1).filter(this.isCollision)[0];
+    this.y = this.collisionPoints2[this.x];
   }
 
   this.inside = this.isInside();

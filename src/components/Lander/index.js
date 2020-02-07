@@ -1,8 +1,17 @@
 import GameObject from '../GameObject';
 import RandomNumberInRange from 'utils/RandomNumberInRange';
+import Collision from 'components/Collision';
+import Explosion from 'components/Explosion';
 
-const Lander = function(x, y) {
+const Lander = function(
+  x,
+  y,
+  collisionLandscape,
+  crashLandscape,
+  landingLandscape
+) {
   GameObject.call(this, x, y, []);
+  this.collisionLandscape = collisionLandscape;
   this.deltaX = Lander.initialDeltaX;
   this.deltaY = Lander.initialDeltaY;
   this.rotation = 0;
@@ -12,33 +21,16 @@ const Lander = function(x, y) {
   this.isCrashed = false;
   this.fuel = Lander.initialFuel;
   this.shape = Lander.shape();
+  this.exploding = false;
+  this.explosion = new Explosion(15, this.collisionLandscape);
   this.makeCollisionPoints();
+  this.crash = new Collision(this, crashLandscape);
+  this.landing = new Collision(this, landingLandscape);
 };
 
 Lander.prototype = Object.create(GameObject.prototype);
 
 Lander.prototype.constructor = Lander;
-
-Lander.prototype.update = function(isUpPressed, isRightPressed, isLeftPressed) {
-  this.makeCollisionPoints();
-  if (this.isLanded || this.isCrashed) {
-    this.deltaX = 0;
-    this.deltaY = 0;
-    return;
-  }
-
-  if (isUpPressed) this.thrustOn();
-  if (!isUpPressed) this.thrustOff();
-
-  if (isRightPressed && !isLeftPressed) this.rotateClockwise();
-  if (isLeftPressed && !isRightPressed) this.rotateCounterClockwise();
-
-  this.accelerate();
-  this.checkCanLand();
-
-  this.x += this.deltaX;
-  this.y += this.deltaY;
-};
 
 Lander.prototype.makeCollisionPoints = function() {
   const x = Math.floor(this.x);
@@ -68,6 +60,7 @@ Lander.prototype.checkRotation = function() {
 
 Lander.prototype.accelerate = function() {
   this.deltaX *= 1 - Lander.drag;
+  // prettier-ignore
   this.deltaY = this.deltaY > Lander.maxDelta
     ? Lander.maxDelta
     : this.deltaY < -Lander.maxDelta
@@ -94,19 +87,75 @@ Lander.prototype.thrustOff = function() {
 };
 
 Lander.prototype.checkCanLand = function() {
-  this.canLand = (
-    (this.rotation < Lander.landingRotationTolerance
-      || this.rotation > Math.PI * 2 - Lander.landingRotationTolerance)
+  // prettier-ignore
+  this.canLand = (this.rotation < Lander.landingRotationTolerance
+    || this.rotation > Math.PI * 2 - Lander.landingRotationTolerance)
     && Math.abs(this.deltaX) < Lander.landingMaxDelta
-    && Math.abs(this.deltaY) < Lander.landingMaxDelta
-  );
+    && Math.abs(this.deltaY) < Lander.landingMaxDelta;
+};
+
+Lander.prototype.zerofy = function() {
+  this.deltaX = 0;
+  this.deltaY = 0;
+  // this.y = this.collisionLandscape.collisionPoints[Math.floor(this.x)];
+  this.rotation = 0;
+};
+
+Lander.prototype.explode = function() {
+  this.exploding = true;
+  !this.explosion.active && this.explosion.start(this);
+};
+
+Lander.prototype.update = function(isUpPressed, isRightPressed, isLeftPressed) {
+  this.crash.update();
+  this.landing.update();
+
+  if (!this.isCrashed && !this.isLanded) {
+    // prettier-ignore
+    this.isCrashed = this.crash.exists || (this.landing.exists && (!this.landing.inside || !this.canLand));
+    this.isLanded = this.canLand && this.landing.exists && this.landing.inside;
+  }
+
+  if (this.isLanded) return;
+
+  if (this.isCrashed && !this.exploding) {
+    this.explode();
+    this.zerofy();
+    return;
+  }
+
+  if (this.exploding) {
+    this.explosion.update();
+    if (this.explosion.active && !this.explosion.isAlive()) this.exploding = false;
+    return;
+  }
+
+  this.makeCollisionPoints();
+
+  if (isUpPressed) this.thrustOn();
+  if (!isUpPressed) this.thrustOff();
+
+  if (isRightPressed && !isLeftPressed) this.rotateClockwise();
+  if (isLeftPressed && !isRightPressed) this.rotateCounterClockwise();
+
+  this.accelerate();
+  this.checkCanLand();
+
+  this.x += this.deltaX;
+  this.y += this.deltaY;
 };
 
 Lander.prototype.draw = function(context) {
-  if (this.isCrashed) return;
+  const x = Math.floor(this.x);
+  const y = Math.floor(this.y);
+
+  if (this.exploding) {
+    this.explosion.draw(context);
+    return;
+  }
 
   context.save();
-  context.translate(this.x, this.y);
+  context.translate(x, y);
 
   if (this.rotation > 0) context.rotate(this.rotation);
 
@@ -114,7 +163,7 @@ Lander.prototype.draw = function(context) {
   if (this.thrustPower > 0 && !this.isLanded)
     GameObject.prototype.drawShape(context, Lander.thrust(this.thrustPower));
 
-  context.translate(-this.x, -this.y);
+  context.translate(-x, -y);
   context.restore();
 };
 
@@ -129,7 +178,7 @@ Lander.rotationAcceleration = 0.0174;
 Lander.maxDelta = 1.25;
 Lander.maxRotation = 2 * Math.PI;
 Lander.landingRotationTolerance = 0.1;
-Lander.landingMaxDelta = 0.1;
+Lander.landingMaxDelta = 0.2;
 Lander.width = 10;
 Lander.height = 12;
 Lander.halfWidth = Lander.width / 2;
@@ -155,8 +204,8 @@ Lander.shape = () => {
 };
 
 Lander.thrust = power => {
+  // prettier-ignore
   const height = Lander.thrustMaxHeight * 2 * power * RandomNumberInRange(0.75, 1);
-
   return [
     { cmd: 'strokeStyle', style: 'gray' },
     { cmd: 'fillStyle', style: 'black' },

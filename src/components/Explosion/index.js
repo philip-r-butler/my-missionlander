@@ -2,27 +2,34 @@ import Particle from 'components/Particle';
 
 const Explosion = function(numOfParticles, landscape) {
   this.active = false;
-  this.particles = Array.from({ length: numOfParticles }, (_, i) => i);
   this.landscape = landscape;
+  this.makeParticles(numOfParticles);
 };
 
-Explosion.prototype.explode = function({ x, y, deltaX, deltaY }) {
+Explosion.prototype.makeParticles = function(num) {
+  this.particles = Array.from({ length: num }, (_, i) => i);
+};
+
+Explosion.prototype.start = function({ x, y, deltaX, deltaY }) {
   this.active = true;
   this.particles = this.particles.map(() => new Particle(x, y, deltaX, deltaY, this.landscape));
 };
 
 Explosion.prototype.isAlive = function() {
-  return this.particles.some(particle => particle.alive);
+  return this.particles.some(Explosion.particleAlive);
 };
 
 Explosion.prototype.update = function() {
-  if (!this.active) return;
-  this.particles.forEach(particle => particle.update());
+  this.particles.forEach(Explosion.particleUpdate);
 };
 
 Explosion.prototype.draw = function(context) {
-  if (!this.active) return;
-  this.particles.forEach(particle => particle.draw(context));
+  const particleDraw = Explosion.particleDraw(context);
+  this.particles.forEach(particleDraw);
 };
+
+Explosion.particleUpdate = particle => particle.update();
+Explosion.particleAlive = particle => particle.alive;
+Explosion.particleDraw = context => particle => particle.draw(context);
 
 export default Explosion;
