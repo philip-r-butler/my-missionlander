@@ -1,4 +1,5 @@
-import GameObject from '../GameObject';
+import GameObject from 'components/GameObject';
+import round from 'utils/Round';
 
 const Stars = function(density, width, height) {
   GameObject.call(this, 0, 0, []);
@@ -21,7 +22,7 @@ Stars.prototype.makeShape = function() {
 };
 
 Stars.prototype.numberOfStars = function(density, width) {
-  return Math.floor(density * width);
+  return round(density * width);
 };
 
 Stars.prototype.setSize = function(width, height) {
@@ -35,10 +36,10 @@ Stars.makeStars = (number = 0, width = 0, height = 0) =>
     .map(() => [
       {
         cmd: 'rect',
-        x: Math.random() * width,
-        y: Math.random() * height,
-        width: 2,
-        height: 2,
+        x: round(Math.random() * width),
+        y: round(Math.random() * height),
+        width: 1,
+        height: 1,
       },
       { cmd: 'fillStyle', style: 'white' },
       { cmd: 'fill' },

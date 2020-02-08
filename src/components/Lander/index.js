@@ -2,6 +2,7 @@ import GameObject from '../GameObject';
 import RandomNumberInRange from 'utils/RandomNumberInRange';
 import Collision from 'components/Collision';
 import Explosion from 'components/Explosion';
+import round from 'utils/Round';
 
 const Lander = function(
   x,
@@ -146,8 +147,8 @@ Lander.prototype.update = function(isUpPressed, isRightPressed, isLeftPressed) {
 };
 
 Lander.prototype.draw = function(context) {
-  const x = Math.floor(this.x);
-  const y = Math.floor(this.y);
+  const x = this.x;
+  const y = this.y;
 
   if (this.exploding) {
     this.explosion.draw(context);
@@ -181,12 +182,12 @@ Lander.landingRotationTolerance = 0.1;
 Lander.landingMaxDelta = 0.2;
 Lander.width = 10;
 Lander.height = 12;
-Lander.halfWidth = Lander.width / 2;
-Lander.halfHeight = Lander.height / 2;
+Lander.halfWidth = round(Lander.width / 2);
+Lander.halfHeight = round(Lander.height / 2);
 Lander.thrustGap = 2;
-Lander.thrustWidth = Lander.halfWidth;
-Lander.halfThrustWidth = Lander.thrustWidth / 2;
-Lander.thrustMaxHeight = Lander.height * 1.25;
+Lander.thrustWidth = round(Lander.halfWidth);
+Lander.halfThrustWidth = round(Lander.thrustWidth / 2);
+Lander.thrustMaxHeight = round(Lander.height * 1.25);
 
 Lander.shape = () => {
   return [
