@@ -13,7 +13,7 @@
     padding: 0;
 }
 
-html, body {
+body {
     width: 100%;
     height: 100%;
     background: black;
@@ -23,8 +23,33 @@ html, body {
     letter-spacing: 0.2em;
 }
 
-#canvas {
+#canvases {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+canvas {
     display: block; /* to remove the scrollbars */
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#stars {
+    z-index: 1;
+}
+
+#platforms {
+    z-index: 2;
+}
+
+#mountains {
+    z-index: 3;
+}
+
+#lander {
+    z-index: 4;
 }
 
 #information {
