@@ -1,21 +1,18 @@
-import Background from 'components/Background';
 import Lander from 'components/Lander';
 import Stars from 'components/Stars';
 import MountainRange from 'components/MountainRange';
 import LandingPlatform from 'components/LandingPlatform';
 import GameInformation from 'components/GameInformation';
 
-function Game(global, canvasId) {
+function Game(global, canvases) {
   this.window = global;
-  this.canvas = this.window.document.getElementById(canvasId);
-  this.context = this.canvas.getContext('2d');
-
   this.winMessage = this.window.document.getElementById('win');
   this.looseMessage = this.window.document.getElementById('loose');
 
+  this.createCanvases(canvases);
   this.createEventListeners();
-
   this.createKeyCommands();
+
   this.setSize();
 
   this.animate = this.animate.bind(this);
@@ -28,7 +25,19 @@ Game.prototype.start = function() {
   this.animationStopped = false;
 
   this.createGameObjects();
+  this.drawBackground();
+
+  this.animation && this.window.cancelAnimationFrame(this.animation);
   this.animate();
+};
+
+Game.prototype.createCanvases = function(canvases) {
+  this.canvases = Object.keys(canvases).reduce((acc, key) => {
+    const canvas = this.window.document.getElementById(canvases[key]);
+    const context = canvas.getContext('2d');
+    acc[key] = { canvas, context };
+    return acc;
+  }, {});
 };
 
 Game.prototype.createEventListeners = function() {
@@ -63,21 +72,19 @@ Game.prototype.createKeyCommands = function() {
 };
 
 Game.prototype.createGameObjects = function() {
-  this.background = new Background(
-    'black',
-    this.canvas.width,
-    this.canvas.height
-  );
+  const width = this.width;
+  const height = this.height;
+
   this.mountainRange = new MountainRange({
-    width: this.canvas.width,
-    height: this.canvas.height,
+    width,
+    height,
     scale: 0.6,
     smoothness: 0.003,
     seed: 59.17262745556566,
   });
   this.landingPlatforms = new LandingPlatform(this.mountainRange.points);
   this.makeCollisionLandscape();
-  this.stars = new Stars(0.04, this.canvas.width, this.canvas.height);
+  this.stars = new Stars(0.2, width, height);
   this.lander = new Lander(
     50,
     50,
@@ -89,11 +96,13 @@ Game.prototype.createGameObjects = function() {
 };
 
 Game.prototype.setSize = function() {
-  const width = this.window.innerWidth;
-  const height = this.window.innerHeight;
+  this.width = this.window.innerWidth;
+  this.height = this.window.innerHeight;
 
-  this.canvas.width = width;
-  this.canvas.height = height;
+  Object.keys(this.canvases).forEach(key => {
+    this.canvases[key].canvas.width = this.width;
+    this.canvases[key].canvas.height = this.height;
+  });
 };
 
 Game.prototype.makeCollisionLandscape = function() {
@@ -113,17 +122,22 @@ Game.prototype.update = function() {
   !this.gameStopped && this.gameInformation.update(this.lander, this.collisionLandscape);
 
   if (this.lander.isCrashed || this.lander.isLanded) this.gameStopped = true;
-  if (this.lander.isLanded || this.lander.isCrashed && !this.lander.exploding) this.animationStopped = true;
+  if (this.lander.isLanded || (this.lander.isCrashed && !this.lander.exploding)) {
+    this.animationStopped = true;
+  }
   this.lander.isCrashed && this.loose();
   this.lander.isLanded && this.win();
 };
 
+Game.prototype.drawBackground = function() {
+  this.stars.draw(this.canvases.stars.context);
+  this.landingPlatforms.draw(this.canvases.platforms.context);
+  this.mountainRange.draw(this.canvases.mountains.context);
+};
+
 Game.prototype.draw = function() {
-  this.background.draw(this.context);
-  this.stars.draw(this.context);
-  this.landingPlatforms.draw(this.context);
-  this.mountainRange.draw(this.context);
-  this.lander.draw(this.context);
+  this.canvases.lander.context.clearRect(0, 0, this.width, this.height);
+  this.lander.draw(this.canvases.lander.context);
   this.gameInformation.draw();
 };
 
@@ -136,9 +150,11 @@ Game.prototype.loose = function() {
 };
 
 Game.prototype.animate = function() {
-  this.update();
   this.draw();
-  !this.animationStopped && this.window.requestAnimationFrame(this.animate);
+  this.update();
+  if (!this.animationStopped) {
+    this.animation = this.window.requestAnimationFrame(this.animate);
+  }
 };
 
 Game.prototype.onKeyDown = function(e) {
@@ -153,10 +169,10 @@ Game.prototype.onKeyUp = function(e) {
 
 Game.prototype.onResize = function() {
   this.setSize();
-  this.background.setSize(this.canvas.width, this.canvas.height);
-  this.stars.setSize(this.canvas.width, this.canvas.height);
-  this.mountainRange.setSize(this.canvas.width, this.canvas.height);
-  this.landingPlatforms.setSize(this.canvas.width, this.canvas.height);
+  this.stars.setSize(this.width, this.height);
+  this.mountainRange.setSize(this.width, this.height);
+  this.landingPlatforms.setSize(this.width, this.height);
+  this.drawBackground();
   this.draw();
 };
 

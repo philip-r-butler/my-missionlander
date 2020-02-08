@@ -4,7 +4,8 @@ const drawElements = context => ({
 });
 
 const command = context => ({
-  strokeStyle: ({ style }) => (context.strokeStyle = style),
+  clearRect : ({x, y, w, h}) => context.clearRect(x, y, w, h),
+  strokeStyle: ({ style }) => context.strokeStyle = style,
   beginPath: () => context.beginPath(),
   moveTo: ({ x, y }) => context.moveTo(x, y),
   translate: ({ x, y }) => context.translate(x, y),

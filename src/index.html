@@ -4,7 +4,12 @@
     <title>Mission Lander Game</title>
   </head>
   <body>
-    <canvas id="canvas"></canvas>
+    <div id="canvases">
+      <canvas id="stars"></canvas>
+      <canvas id="platforms"></canvas>
+      <canvas id="mountains"></canvas>
+      <canvas id="lander"></canvas>
+    </div>
     <div id="information">
       <div id="status">
         <div class="first"><span>SCORE</span><span id="score">0000</span></div>
@@ -24,8 +29,10 @@
       </div>
     </div>
     <div id="messages">
-      <div id="win"><p>Woo hoo ... you landed successfully!</p>
-        <p>Enter [space] for the next level.</p></div>
+      <div id="win">
+        <p>Woo hoo ... you landed successfully!</p>
+        <p>Enter [space] for the next level.</p>
+      </div>
       <div id="loose">Oops ... you crashed!</div>
     </div>
   </body>
