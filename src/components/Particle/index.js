@@ -56,7 +56,7 @@ Particle.prototype.setAlive = function() {
   this.alive = Math.abs(this.deltaX) > 0.001
     && Math.abs(this.deltaY) > 0.001
     && this.x > 0 && this.y > 0
-    && this.y < this.landscape.collisionPoints[Math.floor(this.x)];
+    && this.y < this.landscape[Math.floor(this.x)];
 };
 
 Particle.prototype.update = function() {

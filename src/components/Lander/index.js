@@ -5,6 +5,8 @@ import Explosion from 'components/Explosion';
 import round from 'utils/Round';
 
 const Lander = function(
+  width,
+  height,
   x,
   y,
   collisionLandscape,
@@ -12,6 +14,8 @@ const Lander = function(
   landingLandscape
 ) {
   GameObject.call(this, x, y, []);
+  this.width = width;
+  this.height = height;
   this.collisionLandscape = collisionLandscape;
   this.deltaX = Lander.initialDeltaX;
   this.deltaY = Lander.initialDeltaY;
@@ -25,6 +29,7 @@ const Lander = function(
   this.exploding = false;
   this.explosion = new Explosion(15, this.collisionLandscape);
   this.makeCollisionPoints();
+  // console.log(this.collisionPoints, crashLandscape, landingLandscape);
   this.crash = new Collision(this, crashLandscape);
   this.landing = new Collision(this, landingLandscape);
 };
@@ -127,7 +132,8 @@ Lander.prototype.update = function(isUpPressed, isRightPressed, isLeftPressed) {
 
   if (this.exploding) {
     this.explosion.update();
-    if (this.explosion.active && !this.explosion.isAlive()) this.exploding = false;
+    if (this.explosion.active && !this.explosion.isAlive())
+      this.exploding = false;
     return;
   }
 
@@ -150,6 +156,8 @@ Lander.prototype.draw = function(context) {
   const x = this.x;
   const y = this.y;
 
+  context.clearRect(0, 0, this.width, this.height);
+
   if (this.exploding) {
     this.explosion.draw(context);
     return;
@@ -160,9 +168,10 @@ Lander.prototype.draw = function(context) {
 
   if (this.rotation > 0) context.rotate(this.rotation);
 
-  GameObject.prototype.drawShape(context, this.shape);
-  if (this.thrustPower > 0 && !this.isLanded)
-    GameObject.prototype.drawShape(context, Lander.thrust(this.thrustPower));
+  this.drawShape(context, this.shape);
+  if (this.thrustPower > 0 && !this.isLanded) {
+    this.drawShape(context, Lander.thrust(this.thrustPower));
+  }
 
   context.translate(-x, -y);
   context.restore();
@@ -170,7 +179,7 @@ Lander.prototype.draw = function(context) {
 
 Lander.initialDeltaX = 0.5;
 Lander.initialDeltaY = 0;
-Lander.initialFuel = 1000;
+Lander.initialFuel = 2000;
 Lander.fuelEfficiency = 0.5;
 Lander.gravity = 0.001;
 Lander.drag = 0.0003;

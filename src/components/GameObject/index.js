@@ -4,6 +4,8 @@ const GameObject = function(x, y, shape) {
   this.x = x;
   this.y = y;
   this.shape = shape;
+  this.doDraw = true;
+  this.doUpdate = true;
 };
 
 GameObject.prototype.setSize = function(width, height) {
@@ -16,7 +18,7 @@ GameObject.prototype.draw = function(context) {
 };
 
 GameObject.prototype.drawShape = function(context, shape) {
-  drawElements(context).execute(shape);
+  this.doDraw && drawElements(context).execute(shape);
 };
 
 export default GameObject;

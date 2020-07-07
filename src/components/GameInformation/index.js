@@ -17,7 +17,7 @@ GameInformation.prototype.setDisplayNodes = function() {
   this.displayVSpeed = this.window.document.getElementById('vSpeed');
 };
 
-GameInformation.prototype.update = function(lander, landscape) {
+GameInformation.prototype.update = function(lander, collisionPoints) {
   this.score = 0;
   this.time = this.formatElapsedTime();
   this.fuel = this.formatFuel(lander.fuel);
@@ -25,7 +25,7 @@ GameInformation.prototype.update = function(lander, landscape) {
     lander.x + Lander.halfWidth,
     lander.x - Lander.halfWidth,
     lander.y - Lander.halfHeight,
-    landscape.collisionPoints
+    collisionPoints
   );
   this.hSpeed = this.formatSpeed(lander.deltaX);
   this.vSpeed = this.formatSpeed(lander.deltaY);

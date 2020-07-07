@@ -1,21 +1,27 @@
 import GameObject from 'components/GameObject';
 import * as Noise from 'perlin-noise-3d';
+import round from 'utils/Round';
 
-const MountainRange = function(params = {}) {
+const MountainRange = function({
+  width,
+  height,
+  scale,
+  seed,
+  smoothness,
+}) {
   GameObject.call(this, 0, 0, []);
-  this.initialiseProperties(this, params, MountainRange.defaults);
+  this.width = width;
+  this.height = height;
+  this.scale = scale;
+  this.seed = seed;
+  this.smoothness = smoothness;
   this.makeShape();
+
 };
 
-MountainRange.prototype = Object.create(GameObject.prototype);
+MountainRange.prototype = new GameObject();
 
 MountainRange.prototype.constructor = MountainRange;
-
-MountainRange.prototype.initialiseProperties = function(obj, params, defaults) {
-  Object.keys(defaults).forEach(
-    key => (obj[key] = params[key] || defaults[key])
-  );
-};
 
 MountainRange.prototype.makeShape = function() {
   this.makePoints();
@@ -29,26 +35,19 @@ MountainRange.prototype.makeShape = function() {
 
 MountainRange.prototype.makePoints = function() {
   const noise = new Noise();
-  noise.noiseSeed(MountainRange.levels[1].seed);
+  noise.noiseSeed(this.seed);
 
-  const data = Array.from({ length: this.width }, (_, i) =>
-    noise.get(i * this.smoothness)
+  const data = Array.from({ length: round(this.width) }, (_, i) =>
+    noise.get((i) * this.smoothness)
   );
-  const minPoint = Math.min(...data);
-  const range = Math.max(...data) - minPoint;
+  this.minPoint = Math.min(...data);
+  this.range = Math.max(...data) - this.minPoint;
 
   this.points = data.map((point, x, arr) => {
-    const y = this.calculateY(point, this.height, this.scale, minPoint, range);
-    const slope = x > 0
-      ? this.calculateY(
-        arr[x - 1],
-        this.height,
-        this.scale,
-        minPoint,
-        range
-      ) - y
-      : 0;
-    return { x, y, slope };
+    const y = this.calculateY(arr[x - 1]);
+    const y2 = this.calculateY(point);
+    const slope = x > 0 ? y2 - y : 0;
+    return { x, y: y2, slope };
   });
 };
 
@@ -65,33 +64,22 @@ MountainRange.prototype.setSize = function(width, height) {
   this.makeShape();
 };
 
-MountainRange.prototype.calculateY = function(
-  point,
-  height,
-  scale,
-  minPoint,
-  range
-) {
-  return Math.floor(
-    height * (1 + (scale * (point - minPoint - range)) / range)
-  );
+MountainRange.prototype.calculateY = function(point) {
+  // prettier-ignore
+  return round(this.height * (1 + (this.scale * (point - this.minPoint - this.range)) / this.range));
 };
 
-MountainRange.defaults = {
-  width: 1024,
-  height: 800,
-  scale: 1,
-  seed: 0.5,
-  smoothness: 0.003,
-};
+// MountainRange.prototype.draw = function() {
+//   GameObject.prototype.drawShape(this.viewport.context, this.shape);
+// };
 
-MountainRange.levels = {
-  1: { seed: 59.17262745556566 },
-  2: { seed: 47.373043350415635 },
-  3: { seed: 41.41870104674111 },
-  4: { seed: 97.98805490301626 },
-  5: { seed: 14.647031675482115 },
-};
+// MountainRange.levels = {
+//   1: { seed: 59.17262745556566 },
+//   2: { seed: 47.373043350415635 },
+//   3: { seed: 41.41870104674111 },
+//   4: { seed: 97.98805490301626 },
+//   5: { seed: 14.647031675482115 },
+// };
 
 MountainRange.shape = (width = 0, height = 0, points = []) => {
   const firstPeak = points[0];
