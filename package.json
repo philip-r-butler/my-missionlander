@@ -61,7 +61,7 @@
     "jest-enzyme": "^7.0.1",
     "jest-watch-typeahead": "^0.2.0",
     "mini-css-extract-plugin": "^0.5.0",
-    "node-sass": "^4.10.0",
+    "node-sass": "^7.0.0",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "prettier": "^1.15.3",
     "prettier-eslint": "^8.8.2",
